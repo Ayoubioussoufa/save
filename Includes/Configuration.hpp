@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:22:39 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/24 14:17:14 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/29 14:01:37 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ class Configuration
         void                         InitClientBodySize(std::string value);
         void                         InitAutoIndex(std::string value);
         void                         InitUpload(std::string value);
-        std::map<std::string, std::string>  getCgis() const;
+        std::map<std::string, std::string>  getCgi() const;
         void                                InitCgi(std::string path, std::string lang);
         std::string                  getUpload() const;
         std::string                  getRoot() const;

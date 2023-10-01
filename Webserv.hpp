@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 16:22:49 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/26 16:31:19 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/29 18:50:16 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,11 +67,14 @@
 // #include "Response/Response.hpp"
 
 
+
 class Client;
 typedef std::vector<std::string>::iterator TokenVectsIter;
-void    ft_Response(Client &client);
+void   ft_Response(Client &client);
 void     sigintHandler(int signal);
-
+void    Delete_dir(const std::string& folderPath);
+void    ft_send(Client& client);
+void sig_handler(int sig);
 // ! new 
 // ? status Code
 #define FILESIZE 10

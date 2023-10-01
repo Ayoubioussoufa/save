@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:07:10 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/26 16:29:39 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/30 16:25:27 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,10 +48,11 @@ class Request
         void            setResponseStatus(const std::string& status);
         int             processChunk(std::string buffer, size_t bytesread); // int socket ?
         int             parseRequest();
-        void            processBody();
+        int            processBody();
         size_t          customFind(const std::vector<char>& vec, const std::string& str, size_t start);
         int            parseHeaders();
         std::string     GenerateFile();
+        const int&  getFd() const;
         int             countNumbersInString(const std::string& inputString);
         std::string     vectorCharToString(const std::vector<char>& vec);
         std::vector<char> customSubstr(const std::vector<char>& vec, size_t start, size_t length);

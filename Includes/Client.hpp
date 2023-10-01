@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/22 20:32:36 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/30 11:47:04 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,24 @@
 #include "Configuration.hpp"
 #include "Response.hpp"
 
+struct   Methods
+{
+    bool _get;
+    bool _post;
+    bool _delete;
+};
+
+
 class Client
 {
     private:
         int         _socketId;
         Configuration   _client_server;
-    public : 
+    public :
+        int         _content_fd;
+        ssize_t     _readStatus;
+        int         _status;
+        Methods     methods;
         Response    response;
         Client();
         Client(const Client& other);

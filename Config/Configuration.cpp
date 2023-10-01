@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:26:09 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/24 14:32:05 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/29 14:01:37 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -398,7 +398,7 @@ std::string Configuration::getIndex() const
     return _index;
 }
 
-std::map<std::string, std::string> Configuration::getCgis() const
+std::map<std::string, std::string> Configuration::getCgi() const
 {
     return _cgi;
 }
@@ -452,7 +452,7 @@ std::ostream& operator<<(std::ostream& o, Configuration obj)
     }
     // o << std::endl;
     // Output location blocks
-    std::map<std::string, std::string> b = obj.getCgis();
+    std::map<std::string, std::string> b = obj.getCgi();
     for (std::map<std::string, std::string>::iterator it = b.begin(); it != b.end(); it++)
     {
         o << "cgi: " << it->first << "  " << it->second << " " << std::endl;

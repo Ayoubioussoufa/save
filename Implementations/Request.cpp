@@ -226,15 +226,26 @@ int    Request::parseHeaders()
     // Read the first line (request line)
     if (!std::getline(requestStream, line)) {
         // Handle an empty or incomplete request
-        setResponseStatus("400 Bad Request");
+        setResponseStatus(400);
         return 0;
     }
     std::istringstream requestLineStream(line);
     if (!(requestLineStream >> _method >> _path >> _httpVersion)) {
         // Handle invalid request line
-        setResponseStatus("400 Bad Request");
+        setResponseStatus(400);
         return 0;
     }
+    if (_path.length() > 2048)
+        setResponseStatus(414);
+    if (!_path.empty())
+    {
+        size_t found = _path.find("?");
+        if (found != std::string::npos) {
+            _path = _path.substr(0, found);  // Get the substring before the '?'
+            _queryString = _path.substr(found + 1);  // Get the substring after the '?'
+        }
+    }
+    // ! parse the path and change it
     //This splitting is achieved by using the >> operator, which is used to extract values from the input stream (requestLineStream in this case) based on whitespace (spaces or tabs) as the delimiter.
     if (_path == "/favicon.ico") {
         // Handle it as needed (status), or simply return an empty request
@@ -252,8 +263,18 @@ int    Request::parseHeaders()
             headerValue.erase(0, headerValue.find_first_not_of(" \t"));
             headerValue.erase(headerValue.find_last_not_of(" \t") + 1);
             _headers[headerName] = headerValue;
+            if (headerName == "Transfer-Encoding")
+                _transferEncoding = true;
+            if (headerName == "Content-Length")
+                _contentLength = true;
+            if (headerName == "Transfer-Encoding" && headerValue != "chunked")
+                _transferEncodingChunked = true;
         }
     }
+    if (_transferEncodingChunked)
+        setResponseStatus(501);
+    if (!_transferEncoding && !_contentLength && _method == "POST")
+        setResponseStatus(400);
     if (_method == "GET")
     {
         close(_fd);
@@ -281,6 +302,13 @@ std::string Request::vectorCharToString(const std::vector<char>& vec)
     return result;
 }
 
+std::string     Request::getQueryString() const
+{
+    if (!_queryString.empty())
+        return _queryString;
+    return ("");
+}
+
 Request::Request(const Request& other)
     :   _method(other._method),
         _path(other._path),
@@ -296,6 +324,10 @@ Request::Request(const Request& other)
         _chunksize(other._chunksize),
         _bodies(other._bodies),
         _all(other._all),
+        _queryString(other._queryString),
+        _transferEncodingChunked(other._transferEncodingChunked),
+        _transferEncoding(other._transferEncoding),
+        _contentLength(other._contentLength),
         _headers_done(other._headers_done),
         _fd(other._fd) {}
 
@@ -317,6 +349,10 @@ Request& Request::operator=(const Request& other)
         _chunksize = other._chunksize;
         _bodies = other._bodies;
         _all = other._all;
+        _queryString = other._queryString;
+        _transferEncodingChunked = other._transferEncodingChunked;
+        _transferEncoding = other._transferEncoding;
+        _contentLength = other._contentLength;
         _headers_done = other._headers_done;
         _fd = other._fd;
     }
@@ -358,13 +394,13 @@ void                Request::setPath(std::string newPath)
     // Read the first line (request line)
     if (!std::getline(requestStream, line)) {
         // Handle an empty or incomplete request
-        setResponseStatus("400 Bad Request");
+        setResponseStatus(400);
         return 0;
     }
     std::istringstream requestLineStream(line);
     if (!(requestLineStream >> _method >> _path >> _httpVersion)) {
         // Handle invalid request line
-        setResponseStatus("400 Bad Request");
+        setResponseStatus(400);
         return 0;
     }
     //This splitting is achieved by using the >> operator, which is used to extract values from the input stream (requestLineStream in this case) based on whitespace (spaces or tabs) as the delimiter.
@@ -395,14 +431,14 @@ void                Request::setPath(std::string newPath)
 
                     if (parsedContentLength == ULONG_MAX) { endptr == headerValueCStr || *endptr != '\0' ||
                         // Handle invalid Content-Length value
-                        setResponseStatus("400 Bad Request");
+                        setResponseStatus(400);
                         return 0;
                     }
                     contentLength = parsedContentLength;
                     isContentLengthFound = true;
                 } catch (const std::exception& e) {
                     // Handle invalid Content-Length value
-                    setResponseStatus("400 Bad Request");
+                    setResponseStatus(400);
                     return 0;
                 }
             }
@@ -457,12 +493,12 @@ const std::string& Request::getHttpVersion() const
     return this->_httpVersion;
 }
 
-const std::string& Request::getResponseStatus() const
+int Request::getResponseStatus() const
 {
     return this->_responseStatus;
 }
 
-void Request::setResponseStatus(const std::string& status) {
+void Request::setResponseStatus(int status) {
     _responseStatus = status;
 }
 
@@ -661,14 +697,14 @@ Request::~Request() {}
 //     // Read the first line (request line)
 //     if (!std::getline(requestStream, line)) {
 //         // Handle an empty or incomplete request
-//         setResponseStatus("400 Bad Request");
+//         setResponseStatus(400);
 //         return 0;
 //     }
 //     std::istringstream requestLineStream(line);
 //     std::cout << "Line : " << line << std::endl;
 //     if (!(requestLineStream >> _method >> _path >> _httpVersion)) {
 //         // Handle invalid request line
-//         setResponseStatus("400 Bad Request");
+//         setResponseStatus(400);
 //         return 0;
 //     }
 //     //This splitting is achieved by using the >> operator, which is used to extract values from the input stream (requestLineStream in this case) based on whitespace (spaces or tabs) as the delimiter.
@@ -793,13 +829,13 @@ Request::~Request() {}
 //     // Read the first line (request line)
 //     if (!std::getline(requestStream, line)) {
 //         // Handle an empty or incomplete request
-//         setResponseStatus("400 Bad Request");
+//         setResponseStatus(400);
 //         return 0;
 //     }
 //     std::istringstream requestLineStream(line);
 //     if (!(requestLineStream >> _method >> _path >> _httpVersion)) {
 //         // Handle invalid request line
-//         setResponseStatus("400 Bad Request");
+//         setResponseStatus(400);
 //         return 0;
 //     }
 //     //This splitting is achieved by using the >> operator, which is used to extract values from the input stream (requestLineStream in this case) based on whitespace (spaces or tabs) as the delimiter.
@@ -830,14 +866,14 @@ Request::~Request() {}
 
 //                     if (parsedContentLength == ULONG_MAX) { endptr == headerValueCStr || *endptr != '\0' ||
 //                         // Handle invalid Content-Length value
-//                         setResponseStatus("400 Bad Request");
+//                         setResponseStatus(400);
 //                         return 0;
 //                     }
 //                     contentLength = parsedContentLength;
 //                     isContentLengthFound = true;
 //                 } catch (const std::exception& e) {
 //                     // Handle invalid Content-Length value
-//                     setResponseStatus("400 Bad Request");
+//                     setResponseStatus(400);
 //                     return 0;
 //                 }
 //             }

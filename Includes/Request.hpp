@@ -20,7 +20,7 @@ class Request
         std::string     _method;
         std::string     _path;
         std::string     _httpVersion;
-        std::string     _responseStatus;
+        int     _responseStatus;
         std::string    _header_before;
         std::vector<char>     _body;
         std::map<std::string, std::string> _headers;
@@ -31,6 +31,10 @@ class Request
         int             _chunksize;
         std::string     _bodies;
         std::string     _all;
+        std::string     _queryString;
+        bool        _transferEncodingChunked;
+        bool        _transferEncoding;
+        bool        _contentLength;
         bool        _headers_done;
         int         _fd;
     public:
@@ -41,17 +45,18 @@ class Request
         const std::string&     getPath() const;
         const std::string&     getMethod() const;
         const std::string&     getHttpVersion() const;
-        const std::string&     getResponseStatus() const;
+        int     getResponseStatus() const;
         std::string         GetFileExtention( void ) const;
         std::string         getContentType( void ) const;
         void                setPath(std::string newPath);
-        void            setResponseStatus(const std::string& status);
+        void            setResponseStatus(int status);
         int             processChunk(std::string buffer, size_t bytesread); // int socket ?
         int             parseRequest();
         int            processBody();
         size_t          customFind(const std::vector<char>& vec, const std::string& str, size_t start);
         int            parseHeaders();
         std::string     GenerateFile();
+        std::string     getQueryString() const;
         const int&  getFd() const;
         int             countNumbersInString(const std::string& inputString);
         std::string     vectorCharToString(const std::vector<char>& vec);

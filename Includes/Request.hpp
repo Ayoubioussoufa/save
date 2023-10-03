@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:07:10 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/30 16:25:27 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/01 17:00:25 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,29 +41,28 @@ class Request
         Request();
         Request(const Request& other);
         Request& operator=(const Request& other);
-        int             parseHttpRequest(std::string requestBuffer, int new_socket, size_t bytesread);
-        const std::string&     getPath() const;
-        const std::string&     getMethod() const;
-        const std::string&     getHttpVersion() const;
-        int     getResponseStatus() const;
-        std::string         GetFileExtention( void ) const;
-        std::string         getContentType( void ) const;
-        void                setPath(std::string newPath);
-        void            setResponseStatus(int status);
-        int             processChunk(std::string buffer, size_t bytesread); // int socket ?
-        int             parseRequest();
-        int            processBody();
-        size_t          customFind(const std::vector<char>& vec, const std::string& str, size_t start);
-        int            parseHeaders();
-        std::string     GenerateFile();
-        std::string     getQueryString() const;
-        const int&  getFd() const;
-        int             countNumbersInString(const std::string& inputString);
-        std::string     vectorCharToString(const std::vector<char>& vec);
-        std::vector<char> customSubstr(const std::vector<char>& vec, size_t start, size_t length);
-        // ! NEW
+        int                        parseHttpRequest(std::string requestBuffer);
+        const std::string&         getPath() const;
+        const std::string&         getMethod() const;
+        const std::string&         getHttpVersion() const;
+        int                        getResponseStatus() const;
+        std::string                GetFileExtention( void ) const;
+        std::string                getContentType( void ) const;
+        void                       setPath(std::string newPath);
+        void                       setResponseStatus(int status);
+        int                        processChunk(std::string buffer);
+        int                        parseRequest();
+        int                        processBody();
+        size_t                     customFind(const std::vector<char>& vec, const std::string& str, size_t start);
+        int                        parseHeaders();
+        std::string                GenerateFile();
+        std::string                getQueryString() const;
+        const int&                 getFd() const;
+        int                        countNumbersInString(const std::string& inputString);
+        std::string                vectorCharToString(const std::vector<char>& vec);
+        std::vector<char>          customSubstr(const std::vector<char>& vec, size_t start, size_t length);
         std::map<int, std::string> getStatusCode( void ) const;
-        void                CreateStatusCode( void );
-        // !
+        void                       CreateStatusCode( void );
+        void                       processMultipartPart(std::string content);
         ~Request();
 };

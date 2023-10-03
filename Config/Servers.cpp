@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/30 18:40:48 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/01 20:41:17 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 
 // Getting all the blocks !!!
 Servers::Servers() {
-    // _client.clear();
-    // _servers.clear();
+    _client.clear();
+    _servers.clear();
 }
 
 Servers::Servers(const Servers& other)
@@ -43,7 +43,6 @@ int Servers::ConfigFileParse(std::string file)
         std::cerr << "Error: Unable to open configuration file." << std::endl;
         return 1;
     }
-
     std::string line;
     bool insideServerBlock = false;
     std::vector<std::string> block;
@@ -199,6 +198,7 @@ int Servers::AllServers()
         if (readySockets < 0)
         {
             perror("Error with select");
+            sleep(2);
             exit(EXIT_FAILURE);
         }
         for (std::map<int, Configuration>::iterator it = serverSockets.begin(); it != serverSockets.end(); it++)
@@ -259,16 +259,8 @@ int Servers::AllServers()
                 {
                     std::string buf(buffer, bytesRead);
                     std::cout << "psps" << std::endl;
-                    // std::cout << buffer << std::endl;
-                    // std::cout << its->response.getMethod()<< std::endl;
-                    // std::cout << its->response.getPath() << std::endl;
-                    // std::cout << its->response.getHttpVersion() << std::endl;
-                    // FD_SET(its->GetSocketId(), &read_fds);
-                    // std::cout << "status : " << its->_status << std::endl;
-                    // std::cout << " PATH : " << its->response.getPath() << std::endl;
-                    if (!its->response.parseHttpRequest(buf, its->GetSocketId(), bytesRead)) // la 9ra kolchi
+                    if (!its->response.parseHttpRequest(buf)) // la 9ra kolchi
                     {
-                        // exit(1);
                         FD_CLR(its->GetSocketId(), &read_fds);
                         FD_SET(its->GetSocketId(), &write_fds);
                     }
@@ -277,11 +269,11 @@ int Servers::AllServers()
         }
         // for (std::vector<Client>::iterator its = _client.begin(); its != _client.end(); its++)
         // {
-        //     // std::cout << "client size: " << _client.size() << std::endl;
         //     if (FD_ISSET(its->GetSocketId(), &tmp_write))
         //     {
         //         std::cout << "\e[1;33mresponse sending [client socket: " << its->GetSocketId() << "]\e[0m" << std::endl;
         //         its->_readStatus = 1;
+        //         std::cout << "|" << its->response.getMethod() << "|" << std::endl;
         //         std::cout << "PATH : " << its->response.getPath() << std::endl;
         //         std::cout << " SERVER sattaus : " << its->_status << std::endl;
         //         if (its->_status == 0)
@@ -293,7 +285,6 @@ int Servers::AllServers()
         //         {
         //             FD_CLR(its->GetSocketId(), &write_fds);
         //             close(its->GetSocketId());
-        //             // FD_SET(its->GetSocketId(), &read_fds);
         //             close(its->_content_fd);
         //             if (maxFd == its->GetSocketId())
         //                 maxFd -= 1;
@@ -304,12 +295,6 @@ int Servers::AllServers()
         //             its--;
         //             std::cout << "client size: " << _client.size() << std::endl;
         //         }
-        //         // std::cout << _client.size() << std::endl; // Erase the current element and move the iterator to the next
-        //         // const char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-        //         // write(its->GetSocketId(), hello, strlen(hello));
-        //         // ! condition matbdlhom tatsali state = DONE
-        //         // FD_CLR(its->GetSocketId(), &);
-        //         // FD_SET(its->GetSocketId(), &read_fds);
         //     }
         // }
     }

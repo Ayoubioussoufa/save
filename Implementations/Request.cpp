@@ -12,8 +12,8 @@
 
 #include "../Includes/Request.hpp"
 
-Request::Request() : _headers_done(false){
-     _responseStatus = 0;
+Request::Request() : _transferEncodingChunked(false), _transferEncoding(false), _contentLength(false), _headers_done(false){
+    _responseStatus = 0;
 }
 
 const int&  Request::getFd() const
@@ -87,6 +87,7 @@ int		Request::processChunk(std::string buffer)
             _headers_done = true;
             if (!parseHeaders())
             {
+                std::cout << _method << "|" << _path << "|" << _httpVersion << "|" << std::endl;
                 for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
                 {
                     std::cout << it->first << " " << it->second << std::endl;
@@ -130,7 +131,7 @@ std::string Request::GenerateFile() {
     std::string randomString = GenerateRandomString(6); // 6 characters for the filename
     std::string timestamp = GenerateTimestamp();
 
-    const char* dir_path = "/nfs/sgoinfre/goinfre/Perso/sben-ela/";
+    const char* dir_path = "/nfs/sgoinfre/goinfre/Perso/aybiouss/";
 
     if (mkdir(dir_path, 0777) != 0 && errno != EEXIST) {
         std::cerr << "Failed to create directory: " << strerror(errno) << std::endl;
@@ -244,16 +245,39 @@ int    Request::parseHeaders()
     }
     if (!_path.empty())
     {
+        while (1)
+        {
+            size_t found = _path.find("%");
+            if (found != std::string::npos) {
+                std::string firstPart = _path.substr(0, found);
+                std::string secondPart = _path.substr(found + 3);
+                std::string number = _path.substr(found + 1, found + 3);
+                long int value = strtoul(number.c_str(), NULL, 16);
+                if (value >= 0 && value <= 255) {
+                    char character = static_cast<char>(value);
+                    firstPart += character + secondPart;
+                    _path.clear();
+                    _path = firstPart;
+                }
+                else
+                {
+                    std::cerr << "Invalid value of hexadecimal !" << std::endl;
+                    return 0;
+                }
+            }
+            else
+                break ;
+        }
         size_t found = _path.find("?");
         if (found != std::string::npos) {
-            _path = _path.substr(0, found);  // Get the substring before the '?'
             _queryString = _path.substr(found + 1);  // Get the substring after the '?'
+            _path = _path.substr(0, found);  // Get the substring before the '?'
         }
     }
     //This splitting is achieved by using the >> operator, which is used to extract values from the input stream (requestLineStream in this case) based on whitespace (spaces or tabs) as the delimiter.
     std::string forBody;
     // Read and parse headers
-    bool inPart = false;
+    // bool inPart = false;
     std::string partContent;
 
     while (std::getline(requestStream, line) && !line.empty()) {
@@ -266,53 +290,53 @@ int    Request::parseHeaders()
             headerValue.erase(0, headerValue.find_first_not_of(" \t"));
             headerValue.erase(headerValue.find_last_not_of(" \t") + 1);
             _headers[headerName] = headerValue; // ! nkhchiha with the boundary wla la
-            if (headerName == "Content-Type" && !strncmp(headerValue.c_str(), "multipart/form-data;", 19))
-            {
-                std::string boundary;
-
-                // Find the position of "boundary="
-                size_t boundaryPos = headerValue.find("boundary=");
-                if (boundaryPos != std::string::npos)
-                    // Extract the boundary value
-                    boundary = headerValue.substr(boundaryPos);
-                else
-                {
-                    // Handle the case where "boundary=" is not found
-                    std::cerr << "Boundary not found in Content-Type." << std::endl;
-                    return 1; // ! THROW EXCEPTION??
-                }
-                while (std::getline(requestStream, line))
-                {
-                    if (line == ("--" + boundary + "\r"))
-                    {
-                        if (!inPart)
-                            inPart = true;
-                        else
-                        {
-                            // Process the current part
-                            processMultipartPart(partContent);
-                            // Reset for the next part
-                            partContent.clear();
-                        }
-                    }
-                    else if (line == ("--" + boundary + "--\r"))
-                        break ; // End of multipart data
-                    else if (inPart)
-                        partContent += line + "\n"; // Append data to the current part
-                }
-                // Process the last part
-                if (!partContent.empty())
-                    processMultipartPart(partContent);
-                setResponseStatus(200);
-                return 0;
-            }
+            if (headerName == "Content-Type")
+                _contentTypeValue = headerValue;
+        //     if (headerName == "Content-Type" && !strncmp(headerValue.c_str(), "multipart/form-data;", 19))
+        //     {
+        //         std::cout << "ATTENTION : " << std::endl;
+        //         std::string boundary;
+        //         size_t boundaryPos = headerValue.find("boundary="); // Find the position of "boundary="
+        //         if (boundaryPos != std::string::npos)
+        //             boundary = headerValue.substr(boundaryPos); // Extract the boundary value
+        //         else
+        //         {
+        //             std::cerr << "Boundary not found in Content-Type." << std::endl; // Handle the case where "boundary=" is not found
+        //             return 1; // ! THROW EXCEPTION??
+        //         }
+        //         while (std::getline(requestStream, line))
+        //         {
+        //             if (line == ("--" + boundary + "\r"))
+        //             {
+        //                 if (!inPart)
+        //                     inPart = true;
+        //                 else
+        //                 {
+        //                     // Process the current part
+        //                     processMultiPart(partContent);
+        //                     // Reset for the next part
+        //                     partContent.clear();
+        //                 }
+        //             }
+        //             else if (line == ("--" + boundary + "--\r"))
+        //                 break ; // End of multipart data
+        //             else if (inPart)
+        //                 partContent += line + "\n"; // Append data to the current part
+        //         }
+        //         // Process the last part
+        //         if (!partContent.empty())
+        //             processMultiPart(partContent);
+        //         setResponseStatus(200);
+        //         return 0;
+        //     }
             if (headerName == "Transfer-Encoding")
                 _transferEncoding = true;
             if (headerName == "Content-Length")
                 _contentLength = true;
-            if (headerName == "Transfer-Encoding" && headerValue != "chunked")
+            if (headerName == "Transfer-Encoding" && headerValue != "chunked\r")
                 _transferEncodingChunked = true;
-        }
+        // }
+    }
     }
     if (_transferEncodingChunked)
     {
@@ -332,7 +356,9 @@ int    Request::parseHeaders()
     }
     else if (_method == "POST")
     {
-        _fd = open(GenerateFile().c_str(), O_WRONLY | O_APPEND | O_CREAT, 0666);
+        std::string extension = GetFileExtention();
+        std::string name = GenerateFile() + "." + extension;
+        _fd = open(name.c_str(), O_WRONLY | O_APPEND | O_CREAT, 0666);
         std::cout << "File created with number : " << _fd << std::endl;
         if (_fd == -1) {
             std::cerr << "Failed to open the file." << std::endl;
@@ -347,7 +373,7 @@ int    Request::parseHeaders()
     return 1;
 }
 
-void    Request::processMultipartPart(std::string content)
+void    Request::processMultiPart(std::string content)
 {
     std::istringstream requestStream(content);
     std::string line;
@@ -363,6 +389,7 @@ void    Request::processMultipartPart(std::string content)
         }
         if (line == "\r")
         {
+            ;
             //dkhlna fl body
             // ! if chunked and if not
         }
@@ -406,7 +433,8 @@ Request::Request(const Request& other)
         _transferEncoding(other._transferEncoding),
         _contentLength(other._contentLength),
         _headers_done(other._headers_done),
-        _fd(other._fd) {}
+        _fd(other._fd),
+        _contentTypeValue(other._contentTypeValue) {}
 
 Request& Request::operator=(const Request& other)
 {
@@ -432,6 +460,7 @@ Request& Request::operator=(const Request& other)
         _contentLength = other._contentLength;
         _headers_done = other._headers_done;
         _fd = other._fd;
+        _contentTypeValue = other._contentTypeValue;
     }
     return *this;
 }
@@ -441,10 +470,10 @@ std::string         Request::GetFileExtention( void ) const
     std::string extention;
     size_t index;
 
-    index = _path.find('.');
+    index = _contentTypeValue.find('/');
     if (index == std::string::npos)
         return(extention);
-    extention = _path.substr(index);
+    extention = _contentTypeValue.substr(index + 1);
     return (extention);
 }
 

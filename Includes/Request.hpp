@@ -37,6 +37,7 @@ class Request
         bool        _contentLength;
         bool        _headers_done;
         int         _fd;
+        std::string _contentTypeValue;
     public:
         Request();
         Request(const Request& other);
@@ -63,6 +64,6 @@ class Request
         std::vector<char>          customSubstr(const std::vector<char>& vec, size_t start, size_t length);
         std::map<int, std::string> getStatusCode( void ) const;
         void                       CreateStatusCode( void );
-        void                       processMultipartPart(std::string content);
+        void                       processMultiPart(std::string content);
         ~Request();
 };

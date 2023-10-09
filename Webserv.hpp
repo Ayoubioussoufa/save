@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 16:22:49 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/29 18:50:16 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/04 18:28:41 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,17 +66,17 @@
 #include <sys/wait.h>
 // #include "Response/Response.hpp"
 
-
-
+bool isOpen(int fd);
+void signalHandler(int signal);
 class Client;
 typedef std::vector<std::string>::iterator TokenVectsIter;
-void   ft_Response(Client &client);
 void     sigintHandler(int signal);
 void    Delete_dir(const std::string& folderPath);
 void    ft_send(Client& client);
 void sig_handler(int sig);
 // ! new 
 // ? status Code
+#define HEADER_SIZE 42
 #define FILESIZE 10
 #define EXFIALE 13 
 #define BUFFER_SIZE 1024

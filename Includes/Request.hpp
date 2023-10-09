@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:07:10 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/01 17:00:25 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/09 17:19:11 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,14 @@ class Request
         bool        _headers_done;
         int         _fd;
         std::string _contentTypeValue;
+        bool        _condition;
+        unsigned long         _length;
+        unsigned long         _total;
     public:
         Request();
         Request(const Request& other);
         Request& operator=(const Request& other);
+        int                        processAllBody();
         int                        parseHttpRequest(std::string requestBuffer);
         const std::string&         getPath() const;
         const std::string&         getMethod() const;
@@ -65,5 +69,6 @@ class Request
         std::map<int, std::string> getStatusCode( void ) const;
         void                       CreateStatusCode( void );
         void                       processMultiPart(std::string content);
+        std::string                ft_temp( void ) const;
         ~Request();
 };

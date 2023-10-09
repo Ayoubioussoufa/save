@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Servers.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/01 20:41:17 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/09 14:59:26 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 
 // Getting all the blocks !!!
 Servers::Servers() {
-    _client.clear();
-    _servers.clear();
+    // _client.clear();
+    // _servers.clear();
 }
 
 Servers::Servers(const Servers& other)
@@ -43,6 +43,7 @@ int Servers::ConfigFileParse(std::string file)
         std::cerr << "Error: Unable to open configuration file." << std::endl;
         return 1;
     }
+
     std::string line;
     bool insideServerBlock = false;
     std::vector<std::string> block;
@@ -120,7 +121,7 @@ void Servers::printServerData() const
 
 int Servers::AllServers()
 {
-    int maxFd = 0;   // will store the maximum file descriptor value for use in select()
+    int maxFd = 2;   // will store the maximum file descriptor value for use in select()
     fd_set read_fds; // fd_set is a data structure used to manage file descriptors for I/O operations.
                      //  Fill up a fd_set structure with the file descriptors you want to know when data comes in on.
     int server_fd;
@@ -158,6 +159,7 @@ int Servers::AllServers()
             }
             if (bind(server_fd, p->ai_addr, p->ai_addrlen) == -1)
             {
+                std::cout << it->getHost() << "|" << it->getPort() << std::endl;
                 close(server_fd);
                 perror("server: bind");
                 continue;
@@ -187,19 +189,40 @@ int Servers::AllServers()
     FD_ZERO(&write_fds);
     for (std::map<int, Configuration>::iterator it = serverSockets.begin(); it != serverSockets.end(); it++)
     {
-        FD_SET(it->first, &read_fds);
+        if (it->first >= 0) {
+            FD_SET(it->first, &read_fds);
+        }
+        else {
+            std::cout << "FD_SET fails To add the it->first to read_fds" << std::endl;
+            exit(20);
+        }
     }
     while (true)
     {
+        FD_CLR(0, &read_fds);
+        FD_CLR(0, &write_fds);
         fd_set tmp_read = read_fds;
         fd_set tmp_write = write_fds;
         int readySockets = select(maxFd + 1, &tmp_read, &tmp_write, NULL, NULL); // !
-        // std::cout << "__________under Select__________" << std::endl;
+        std::cout << "__________under Select__________" << std::endl;
         if (readySockets < 0)
         {
-            perror("Error with select");
-            sleep(2);
-            exit(EXIT_FAILURE);
+            for (int fd = 0; fd <= maxFd; fd++)
+            {
+                if (FD_ISSET(fd, &tmp_read) || FD_ISSET(fd, &tmp_write))
+                {
+                    if (!isOpen(fd))
+                    {
+                        std::cout << "Closed Fd : " << fd << std::endl;
+                        // exit(1);
+                        if (FD_ISSET(fd, &tmp_read))
+                            FD_CLR(fd, &read_fds);
+                        else
+                            FD_CLR(fd, &write_fds);
+                    }
+                }
+            }
+            continue; // !
         }
         for (std::map<int, Configuration>::iterator it = serverSockets.begin(); it != serverSockets.end(); it++)
         {
@@ -221,8 +244,14 @@ int Servers::AllServers()
                 new_client.set_socket(clientSocketw);
                 new_client.set_server(it->second);
                 _client.push_back(new_client);
-                std::cout << "Clients size : " << _client.size() << std::endl;
-                FD_SET(clientSocketw, &read_fds);
+                if (clientSocketw > 0) { // !
+                    std::cout << "add " << clientSocketw << " to the read_fds" << std::endl;
+                    FD_SET(clientSocketw, &read_fds);
+                }
+                // else {
+                //    std::cout << "FD_SET fails To add the clientSocketw to read_fds" << std::endl;
+                //    exit(20);
+                // } 
             }
         }
         for (std::vector<Client>::iterator its = _client.begin(); its != _client.end(); its++)
@@ -258,47 +287,49 @@ int Servers::AllServers()
                 else
                 {
                     std::string buf(buffer, bytesRead);
-                    std::cout << "psps" << std::endl;
+                    std::cout << "*****************" << std::endl;
+                    std::cout << buf << std::endl;
+                    std::cout << "*****************" << std::endl;
                     if (!its->response.parseHttpRequest(buf)) // la 9ra kolchi
                     {
                         FD_CLR(its->GetSocketId(), &read_fds);
+                        std::cout << "add " << its->GetSocketId() << " to write_fds " << std::endl;
                         FD_SET(its->GetSocketId(), &write_fds);
                     }
                 }
             }
         }
-        // for (std::vector<Client>::iterator its = _client.begin(); its != _client.end(); its++)
-        // {
-        //     if (FD_ISSET(its->GetSocketId(), &tmp_write))
-        //     {
-        //         std::cout << "\e[1;33mresponse sending [client socket: " << its->GetSocketId() << "]\e[0m" << std::endl;
-        //         its->_readStatus = 1;
-        //         std::cout << "|" << its->response.getMethod() << "|" << std::endl;
-        //         std::cout << "PATH : " << its->response.getPath() << std::endl;
-        //         std::cout << " SERVER sattaus : " << its->_status << std::endl;
-        //         if (its->_status == 0)
-        //             ft_Response(*its);
-        //         else
-        //             ft_send(*its);
-        //         std::cout << "********************_readStatus  : " << its->_readStatus << std::endl;
-        //         if (its->_readStatus <= 0)
-        //         {
-        //             FD_CLR(its->GetSocketId(), &write_fds);
-        //             close(its->GetSocketId());
-        //             close(its->_content_fd);
-        //             if (maxFd == its->GetSocketId())
-        //                 maxFd -= 1;
-        //             std::cout << "client size: " << _client.size() << std::endl;
-        //             for (size_t i = 0; i < _client.size(); i++)
-        //                 std::cout << "client PATH : " << _client[i].response.getPath() << std::endl;
-        //             its = _client.erase(its);
-        //             its--;
-        //             std::cout << "client size: " << _client.size() << std::endl;
-        //         }
-        //     }
-        // }
+        for (std::vector<Client>::iterator its = _client.begin(); its != _client.end();)
+        {
+            if (FD_ISSET(its->GetSocketId(), &tmp_write))
+            {
+                std::cout << "1: SOCKET ID " << its->GetSocketId() << std::endl;
+                its->_readStatus = -2;
+                if (its->_status == 0)
+                    its->ft_Response();
+                else
+                    its->ft_send();
+                if (its->_readStatus == -1 || its->_readStatus == 0)
+                {
+                    FD_CLR(its->GetSocketId(), &write_fds);
+                    close(its->GetSocketId());
+                    close(its->_content_fd);
+                    its->set_socket(-1);
+                    its->_content_fd = -1;
+                    std::cout << "2: SOCKET ID " << its->GetSocketId() << std::endl;
+                    its = _client.erase(its);
+                }
+            }
+            else
+                ++its;
+        }
     }
-    for (std::map<int, Configuration>::iterator it = serverSockets.begin(); it != serverSockets.end(); it++)
-        close(it->first);
     return 0;
 }
+// for (std::vector<Client>::iterator it = _client.begin(); it != _client.end(); it++)
+// {
+//     if (FD_ISSET(it->GetSocketId(), &tmp_write))
+//     {
+        
+//     }
+// }

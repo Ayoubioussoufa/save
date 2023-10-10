@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/09 14:59:26 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:25:16 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,6 +254,7 @@ int Servers::AllServers()
                 // } 
             }
         }
+        const std::string FAVICON_PATH = "/favicon.ico";
         for (std::vector<Client>::iterator its = _client.begin(); its != _client.end(); its++)
         {
             if (FD_ISSET(its->GetSocketId(), &tmp_read))
@@ -287,14 +288,17 @@ int Servers::AllServers()
                 else
                 {
                     std::string buf(buffer, bytesRead);
-                    std::cout << "*****************" << std::endl;
-                    std::cout << buf << std::endl;
-                    std::cout << "*****************" << std::endl;
-                    if (!its->response.parseHttpRequest(buf)) // la 9ra kolchi
+                    if (strstr(buffer, FAVICON_PATH.c_str()) == NULL)
                     {
-                        FD_CLR(its->GetSocketId(), &read_fds);
-                        std::cout << "add " << its->GetSocketId() << " to write_fds " << std::endl;
-                        FD_SET(its->GetSocketId(), &write_fds);
+                        std::cout << "*****************" << std::endl;
+                        std::cout << buf << std::endl;
+                        std::cout << "*****************" << std::endl;
+                        if (!its->response.parseHttpRequest(buf)) // la 9ra kolchi
+                        {
+                            FD_CLR(its->GetSocketId(), &read_fds);
+                            std::cout << "add " << its->GetSocketId() << " to write_fds " << std::endl;
+                            FD_SET(its->GetSocketId(), &write_fds);
+                        }
                     }
                 }
             }

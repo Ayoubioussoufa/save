@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/09 17:26:01 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/10 13:24:11 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -237,13 +237,14 @@ int    Request::parseHeaders()
         setResponseStatus(400);
         return 0;
     }
-    if (_path == "/favicon.ico") {
-        _method.clear();
-        _path.clear();
-        _httpVersion.clear();
-        // Handle it as needed (status), or simply return an empty request
-        return 0;
-    }
+    // if (_path == "/favicon.ico") {
+    //     _method.clear();
+    //     _path.clear();
+    //     _httpVersion.clear();
+    //     std::cout << "PATH : PPPPP : " << _path << std::endl;
+    //     // Handle it as needed (status), or simply return an empty request
+    //     return 0;
+    // }
     if (_path.length() > 2048)
     {
         setResponseStatus(414);
@@ -353,6 +354,7 @@ int Request::processAllBody()
         _condition = true;
         return 1;
     }
+    setResponseStatus(200);
     return 0;
 }
 

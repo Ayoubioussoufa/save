@@ -6,13 +6,13 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/10 13:24:11 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/10 15:36:55 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/Request.hpp"
 
-Request::Request() : _transferEncodingChunked(false), _transferEncoding(false), _contentLength(false), _headers_done(false), _condition(false) {
+Request::Request() : _transferEncodingChunked(false), _transferEncoding(false), _contentLength(false), _headers_done(false), _condition(false), _chunked(false) {
     _responseStatus = 0;
     _total = 0;
 }
@@ -93,12 +93,12 @@ int		Request::processChunk(std::string buffer)
             }
         }
     }
-    else if (_condition)
-    {
-        _bodies.clear();
-        _bodies.append(buffer);
-        return processAllBody();
-    }
+    // else if (!_chunked)
+    // {
+    //     _bodies.clear();
+    //     _bodies.append(buffer);
+    //     return processAllBody();
+    // }
     else
 	{
         _bodies.append(buffer);
@@ -281,8 +281,6 @@ int    Request::parseHeaders()
             _path = _path.substr(0, found);  // Get the substring before the '?'
         }
     }
-    std::string partContent;
-
     while (std::getline(requestStream, line) && !line.empty())
     {
         size_t pos = line.find(":");
@@ -295,7 +293,13 @@ int    Request::parseHeaders()
             headerValue.erase(headerValue.find_last_not_of(" \t") + 1);
             _headers[headerName] = headerValue; // ! nkhchiha with the boundary wla la
             if (headerName == "Content-Type")
-                _contentTypeValue = headerValue;
+            {
+                size_t pos = headerValue.find("\r");
+                if (pos == std::string::npos)
+                    _contentTypeValue = headerValue;
+                else
+                    _contentTypeValue = headerValue.substr(0, pos);
+            }
             if (headerName == "Transfer-Encoding")
                 _transferEncoding = true;
             if (headerName == "Content-Length")
@@ -305,6 +309,8 @@ int    Request::parseHeaders()
             }
             if (headerName == "Transfer-Encoding" && headerValue != "chunked\r")
                 _transferEncodingChunked = true;
+            if (headerName == "Transfer-Encoding" && headerValue == "chunked\r")
+                _chunked = true;
         }
     }
     if (_transferEncodingChunked)
@@ -333,7 +339,7 @@ int    Request::parseHeaders()
             std::cerr << "Failed to open the file." << std::endl;
             return 0;
         }
-        if (!_transferEncodingChunked)
+        if (!_chunked && _contentLength)
             return processAllBody(); // BA9I ILA L BODY KBIIIIIIR 
     }
     else
@@ -399,7 +405,8 @@ Request::Request(const Request& other)
         _contentTypeValue(other._contentTypeValue),
         _condition(other._condition),
         _length(other._length),
-        _total(other._total) {}
+        _total(other._total),
+        _chunked(other._chunked) {}
 
 Request& Request::operator=(const Request& other)
 {
@@ -429,6 +436,7 @@ Request& Request::operator=(const Request& other)
         _condition = other._condition;
         _length = other._length;
         _total = other._total;
+        _chunked = other._chunked;
     }
     return *this;
 }
@@ -440,24 +448,23 @@ std::string         Request::ft_temp( void ) const
     std::map<std::string, std::string> mimeTypeToExtensionMap;
 
     // Populate the map with common MIME types and their corresponding file extensions
-    mimeTypeToExtensionMap["text/html\r"] = ".html";
-    mimeTypeToExtensionMap["text/plain\r"] = ".txt";
-    mimeTypeToExtensionMap["text/css\r"] = ".css";
-    mimeTypeToExtensionMap["application/javascript\r"] = ".js";
-    mimeTypeToExtensionMap["application/json\r"] = ".json";
-    mimeTypeToExtensionMap["application/xml\r"] = ".xml";
-    mimeTypeToExtensionMap["image/jpeg\r"] = ".jpg";
-    mimeTypeToExtensionMap["image/jpeg\r"] = ".jpeg";
-    mimeTypeToExtensionMap["image/png\r"] = ".png";
-    mimeTypeToExtensionMap["image/gif\r"] = ".gif";
-    mimeTypeToExtensionMap["application/pdf\r"] = ".pdf";
-    mimeTypeToExtensionMap["audio/mpeg\r"] = ".mp3";
-    mimeTypeToExtensionMap["video/mp4\r"] = ".mp4";
-    mimeTypeToExtensionMap["application/zip\r"] = ".zip";
-    mimeTypeToExtensionMap["application/x-tar\r"] = ".tar";
-    mimeTypeToExtensionMap["application/gzip\r"] = ".gz";
-    mimeTypeToExtensionMap["application/x-httpd-php\r"] = ".php";
-    mimeTypeToExtensionMap["text/x-python\r"] = ".py";
+    mimeTypeToExtensionMap["text/html"] = ".html";
+    mimeTypeToExtensionMap["text/plain"] = ".txt";
+    mimeTypeToExtensionMap["text/css"] = ".css";
+    mimeTypeToExtensionMap["application/javascript"] = ".js";
+    mimeTypeToExtensionMap["application/json"] = ".json";
+    mimeTypeToExtensionMap["application/xml"] = ".xml";
+    mimeTypeToExtensionMap["image/jpeg"] = ".jpeg";
+    mimeTypeToExtensionMap["image/png"] = ".png";
+    mimeTypeToExtensionMap["image/gif"] = ".gif";
+    mimeTypeToExtensionMap["application/pdf"] = ".pdf";
+    mimeTypeToExtensionMap["audio/mpeg"] = ".mp3";
+    mimeTypeToExtensionMap["video/mp4"] = ".mp4";
+    mimeTypeToExtensionMap["application/zip"] = ".zip";
+    mimeTypeToExtensionMap["application/x-tar"] = ".tar";
+    mimeTypeToExtensionMap["application/gzip"] = ".gz";
+    mimeTypeToExtensionMap["application/x-httpd-php"] = ".php";
+    mimeTypeToExtensionMap["text/x-python"] = ".py";
     extention = mimeTypeToExtensionMap[_contentTypeValue];
     return (extention);
 }

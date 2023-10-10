@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/10 13:25:16 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/10 15:16:00 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -290,9 +290,9 @@ int Servers::AllServers()
                     std::string buf(buffer, bytesRead);
                     if (strstr(buffer, FAVICON_PATH.c_str()) == NULL)
                     {
-                        std::cout << "*****************" << std::endl;
-                        std::cout << buf << std::endl;
-                        std::cout << "*****************" << std::endl;
+                        // std::cout << "*****************" << std::endl;
+                        // std::cout << buf << std::endl;
+                        // std::cout << "*****************" << std::endl;
                         if (!its->response.parseHttpRequest(buf)) // la 9ra kolchi
                         {
                             FD_CLR(its->GetSocketId(), &read_fds);

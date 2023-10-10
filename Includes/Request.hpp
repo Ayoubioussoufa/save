@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:07:10 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/09 17:19:11 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/10 14:58:19 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ class Request
         bool        _condition;
         unsigned long         _length;
         unsigned long         _total;
+        bool                  _chunked;
     public:
         Request();
         Request(const Request& other);

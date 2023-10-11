@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/05 22:49:27 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/11 18:15:26 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -349,7 +349,7 @@ void    Client::ft_Response( void )
     {
         signal(SIGPIPE, SIG_IGN);
         static int i = 0;
-        std::cout << "********************START-RESPONSE  : " << "*******************" << std::endl;
+        std::cout << "*****÷***************START-RESPONSE  : " << "*******************" << std::endl;
         response.CreateStatusCode();
         initLocationIndex();
         setTargetPath();

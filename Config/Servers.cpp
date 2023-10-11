@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/10 15:16:00 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/11 17:50:05 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -313,6 +313,7 @@ int Servers::AllServers()
                     its->ft_Response();
                 else
                     its->ft_send();
+                std::cout << "hello ayooub"<< std::endl;
                 if (its->_readStatus == -1 || its->_readStatus == 0)
                 {
                     FD_CLR(its->GetSocketId(), &write_fds);

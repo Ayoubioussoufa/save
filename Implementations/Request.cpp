@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/10 15:36:55 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/11 18:24:52 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,14 +252,23 @@ int    Request::parseHeaders()
     }
     if (!_path.empty())
     {
+        // std::string str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
+        // for (int i = 0; i < _path.length(); i++)
+        // {
+        //     if (str.find() == std::string::npos)
+                
+        // }
+            std::cout << _path << " ||| " << _queryString << std::endl;
+
         while (1)
         {
             size_t found = _path.find("%");
             if (found != std::string::npos) {
                 std::string firstPart = _path.substr(0, found);
                 std::string secondPart = _path.substr(found + 3);
-                std::string number = _path.substr(found + 1, found + 3);
-                long int value = strtoul(number.c_str(), NULL, 16);
+                std::string number = _path.substr(found + 1, 2);
+                long int value = strtol(number.c_str(), NULL, 16);
+                std::cout << "Line and parse : " << firstPart << "     |   SECOND PART    " << secondPart << "     | NUMBER :     " << number << "     |   VALUE :    " << value << std::endl;
                 if (value >= 0 && value <= 255) {
                     char character = static_cast<char>(value);
                     firstPart += character + secondPart;
@@ -281,6 +290,7 @@ int    Request::parseHeaders()
             _path = _path.substr(0, found);  // Get the substring before the '?'
         }
     }
+    std::cout << _path << " ||| " << _queryString << std::endl;
     while (std::getline(requestStream, line) && !line.empty())
     {
         size_t pos = line.find(":");
@@ -339,8 +349,14 @@ int    Request::parseHeaders()
             std::cerr << "Failed to open the file." << std::endl;
             return 0;
         }
-        if (!_chunked && _contentLength)
+        std::cout << "Value of _chunked : " <<  _chunked << std::endl;
+        if (!_chunked)
+        {
+            std::cout << "mawslch hnaya " << std::endl;
             return processAllBody(); // BA9I ILA L BODY KBIIIIIIR 
+        }
+        else
+            return processBody();
     }
     else
     {

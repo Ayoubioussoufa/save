@@ -6,14 +6,14 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/11 18:24:52 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/18 15:03:19 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/Request.hpp"
 
 Request::Request() : _transferEncodingChunked(false), _transferEncoding(false), _contentLength(false), _headers_done(false), _condition(false), _chunked(false) {
-    _responseStatus = 0;
+    _responseStatus = 200;
     _total = 0;
 }
 
@@ -133,7 +133,8 @@ std::string Request::GenerateFile() {
     std::string randomString = GenerateRandomString(6); // 6 characters for the filename
     std::string timestamp = GenerateTimestamp();
 
-    const char* dir_path = "/Users/aybiouss/";
+    const char* dir_path = _upload.append("/").c_str();
+    std::cout<< " - - - - - - - - " << dir_path << " - - - - - - - - "<< std::endl;
 
     if (mkdir(dir_path, 0777) != 0 && errno != EEXIST) {
         std::cerr << "Failed to create directory: " << strerror(errno) << std::endl;
@@ -202,6 +203,8 @@ int    Request::processBody()
         {
             std::cout << "Body ended ..." << std::endl;
             setResponseStatus(200);
+            close(_fd);
+            _fd = open(_name.c_str(), O_RDWR);
             return 0;
         }
         if (_bodies.length() >= chunksize + 2 + crlf_pos + 2)
@@ -213,11 +216,18 @@ int    Request::processBody()
             {
                 std::cout << "Body ended ..." << std::endl;
                 setResponseStatus(200);
+                close(_fd);
+                _fd = open(_name.c_str(), O_RDWR);
                 return 0;
             }
         }
     }
     return 1;
+}
+
+const std::map<std::string, std::string>& Request::getHeaders( void ) const
+{
+    return(_headers);
 }
 
 int    Request::parseHeaders()
@@ -237,13 +247,15 @@ int    Request::parseHeaders()
         setResponseStatus(400);
         return 0;
     }
+    // std::cout << "PATHTW : "  << _path << std::endl;
+    std::cout << "|" << _path << "|" << std::endl;
     // if (_path == "/favicon.ico") {
-    //     _method.clear();
-    //     _path.clear();
-    //     _httpVersion.clear();
-    //     std::cout << "PATH : PPPPP : " << _path << std::endl;
-    //     // Handle it as needed (status), or simply return an empty request
-    //     return 0;
+        // _method.clear();
+        // _path.clear();
+        // _httpVersion.clear();
+        // std::cout << "PATH : PPPPP : " << _path << std::endl;
+        // // Handle it as needed (status), or simply return an empty request
+        // return 0;
     // }
     if (_path.length() > 2048)
     {
@@ -268,7 +280,6 @@ int    Request::parseHeaders()
                 std::string secondPart = _path.substr(found + 3);
                 std::string number = _path.substr(found + 1, 2);
                 long int value = strtol(number.c_str(), NULL, 16);
-                std::cout << "Line and parse : " << firstPart << "     |   SECOND PART    " << secondPart << "     | NUMBER :     " << number << "     |   VALUE :    " << value << std::endl;
                 if (value >= 0 && value <= 255) {
                     char character = static_cast<char>(value);
                     firstPart += character + secondPart;
@@ -290,7 +301,6 @@ int    Request::parseHeaders()
             _path = _path.substr(0, found);  // Get the substring before the '?'
         }
     }
-    std::cout << _path << " ||| " << _queryString << std::endl;
     while (std::getline(requestStream, line) && !line.empty())
     {
         size_t pos = line.find(":");
@@ -321,6 +331,8 @@ int    Request::parseHeaders()
                 _transferEncodingChunked = true;
             if (headerName == "Transfer-Encoding" && headerValue == "chunked\r")
                 _chunked = true;
+            if (headerName == "Host")
+                _value = headerValue.substr(0, headerValue.length() - 1);
         }
     }
     if (_transferEncodingChunked)
@@ -335,26 +347,21 @@ int    Request::parseHeaders()
     }
     if (_method == "GET" || _method == "DELETE")
     {
-        close(_fd);
         setResponseStatus(200);
         return 0;
     }
     else if (_method == "POST")
     {
         std::string extension = ft_temp(); /// ! bdelha
-        std::string name = GenerateFile() + extension;
-        _fd = open(name.c_str(), O_WRONLY | O_APPEND | O_CREAT, 0666);
+        _name = GenerateFile() + extension;
+        _fd = open(_name.c_str(), O_RDWR | O_APPEND | O_CREAT, 0666);
         std::cout << "File created with number : " << _fd << std::endl;
         if (_fd == -1) {
             std::cerr << "Failed to open the file." << std::endl;
             return 0;
         }
-        std::cout << "Value of _chunked : " <<  _chunked << std::endl;
         if (!_chunked)
-        {
-            std::cout << "mawslch hnaya " << std::endl;
             return processAllBody(); // BA9I ILA L BODY KBIIIIIIR 
-        }
         else
             return processBody();
     }
@@ -377,6 +384,10 @@ int Request::processAllBody()
         return 1;
     }
     setResponseStatus(200);
+    std::cout << "File descriptopor  ALlBODY : " << _fd << std::endl;
+    close(_fd);
+    _fd = open(_name.c_str(), O_RDWR);
+    std::cout << "File descriptopor  ALlBODY after : " << _fd << std::endl;
     return 0;
 }
 
@@ -422,7 +433,8 @@ Request::Request(const Request& other)
         _condition(other._condition),
         _length(other._length),
         _total(other._total),
-        _chunked(other._chunked) {}
+        _chunked(other._chunked),
+        _name(other._name) {}
 
 Request& Request::operator=(const Request& other)
 {
@@ -453,6 +465,7 @@ Request& Request::operator=(const Request& other)
         _length = other._length;
         _total = other._total;
         _chunked = other._chunked;
+        _name = other._name;
     }
     return *this;
 }

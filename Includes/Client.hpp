@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/05 22:13:15 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/18 14:12:21 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,17 @@ class Client
         Configuration   _client_server;
         std::map<std::string, std::string> _mapEnv;
     public :
+        std::vector<Configuration>  _duplicated_servers;
+        // size_t      _content
+        std::string _CgiHeader;
+        std::string _CgiFile;
         int         _content_fd;
         int         _status;
+        std::time_t _cgiTimer;
+        int         _cgiPid;
         ssize_t     _readStatus;
         Methods     methods;
+        bool        _isFavicon;
         Response    response;
         Client();
         Client(const Client& other);
@@ -47,6 +54,9 @@ class Client
         void    set_server(Configuration p);
         void    set_socket(int socket);
         // ! NEW
+        void    readCgiHeader( int fd );
+        void    SendHeader(int fd);
+        const std::stringstream&    getFileSize(int fd);
         const char* get_content_type( void );
         void    fullMapEnv();
         void    fullEnv();

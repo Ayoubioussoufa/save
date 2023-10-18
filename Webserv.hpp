@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 16:22:49 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/04 18:28:41 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/18 13:59:21 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 #pragma once
 
-#define PORT 8080 // Where the clients can reach at
-#define MAX_CLIENTS 10 // Maximum number of clients to handle
+#define PORT 7070 // Where the clients can reach at
+#define MAX_CLIENTS 100 // Maximum number of clients to handle
 #include <csignal>
 #include <vector>
 #include <stdio.h>
@@ -26,7 +26,7 @@
 #include <netdb.h>
 // #include "./Includes/Location.hpp"
 // #include "./Includes/Socket.hpp"
-// #include "./Includes/Configuration.hpp"
+// #include "./Includes/Configuration.hpp"ƒ
 // #include "./Includes/Servers.hpp"
 // #ifndef REQUEST_HPP
 // #define REQUEST_HPP
@@ -36,6 +36,7 @@
 // #define RESPONSE_HPP
 // #include "./Includes/Response.hpp"
 // #endif
+ #include <signal.h>
 #include <sys/stat.h>
 #include <stack>
 #include <stdlib.h>
@@ -76,7 +77,7 @@ void    ft_send(Client& client);
 void sig_handler(int sig);
 // ! new 
 // ? status Code
-#define HEADER_SIZE 42
+#define HEADER_SIZE 67
 #define FILESIZE 10
 #define EXFIALE 13 
 #define BUFFER_SIZE 1024
@@ -124,3 +125,6 @@ void sig_handler(int sig);
 #define SERVICEUNAVAILABLE 503
 #define GATEWAYTIMEOUT 504
 #define HTTPVERSIONNOTSUPPORTED 505
+#define CGI 19
+
+void ft_close(int fd);

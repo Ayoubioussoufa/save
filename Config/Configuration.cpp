@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Configuration.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:26:09 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/29 14:01:37 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/18 16:58:35 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,31 +162,30 @@ Configuration::Configuration(std::vector<std::string> vecteur)
         else
             begin++;
     }
-    // std::cout << "-----------------------" << std::endl;
-    // std::cout << _locations[0] << std::endl;
-    // if (getRoot().empty())
-	// 	InitRoot("/");
-	// if (getHost().empty())
-	// 	InitHost("localhost;");
-    //     // !!! nsitiha azbiiiii
-	// if (getIndex().empty())
-	// 	InitIndex("gbdughdfufd"); // ! remove ; ?
-    // if (checkLocations())
-    //     throw std::string("Location is duplicated");
-    // if (!getPort())
-	// 	throw std::string("Port not found"); // ! throw exception wla n3mro b 80
-    // std::vector<int> it = getCodes();
-    // std::map<int, std::string> pages = getErrorPages();
-    // for (std::vector<int>::iterator it2 = it.begin(); it2 != it.end(); it2++)
-    // {
-    //     if (getTypePath(pages[*it2]) != 2)
-    //     {
-    // 	    if (getTypePath(this->_root + pages[*it2]) != 1)
-    // 	    	throw std::string ("Incorrect path for error page file: " + this->_root + pages[*it2]);
-    // 	    if (checkFile(this->_root + pages[*it2], 0) == -1 || checkFile(this->_root + pages[*it2], 4) == -1)
-    // 	    	throw std::string ("Error page file :" + this->_root + pages[*it2] + " is not accessible");
-    //     }
-    // } // ! to be fixed !! 
+    if (getRoot().empty())
+		throw std::string("No root found");
+	if (getHost().empty())
+		InitHost("localhost");
+	if (getIndex().empty())
+		InitIndex("");
+    if (checkLocations())
+        throw std::string("Location is duplicated");
+    if (!getPort())
+		throw std::string("Port not found");
+    if (getServerNames().empty())
+        throw std::string("No server name");
+    std::vector<int> it = getCodes();
+    std::map<int, std::string> pages = getErrorPages();
+    for (std::vector<int>::iterator it2 = it.begin(); it2 != it.end(); it2++)
+    {
+        if (getTypePath(pages[*it2]) != 2)
+        {
+    	    if (getTypePath(this->_root + pages[*it2]) != 1)
+    	    	throw std::string ("Incorrect path for error page file: " + this->_root + pages[*it2]);
+    	    if (checkFile(this->_root + pages[*it2], 0) == -1 || checkFile(this->_root + pages[*it2], 4) == -1)
+    	    	throw std::string ("Error page file :" + this->_root + pages[*it2] + " is not accessible");
+        } // ! l3iba
+    } // ! to be fixed !! 
 } //ila kant / katdir getcwd
 
 std::vector<int>    Configuration::getCodes() const
@@ -244,7 +243,7 @@ Configuration::Configuration(const Configuration& other)
     : _root(other._root), _host(other._host), _index(other._index),
       _error_pages(other._error_pages), _codes(other._codes), _cgi(other._cgi), _client_max_body_size(other._client_max_body_size),
       _AutoIndex(other._AutoIndex), _root_exists(other._root_exists), _port(other._port),
-      _host_exists(other._host_exists), _port_exists(other._port_exists),
+      _host_exists(other._host_exists), _port_exists(other._port_exists), _upload(other._upload),
       _server_name(other._server_name), _locations(other._locations) {}
 
 Configuration& Configuration::operator=(const Configuration& other)

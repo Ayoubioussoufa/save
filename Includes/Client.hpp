@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/18 14:12:21 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/18 18:53:02 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ class Client
     public :
         std::vector<Configuration>  _duplicated_servers;
         // size_t      _content
+        std::map<int, std::string> _defaultErrorPages;
         std::string _CgiHeader;
         std::string _CgiFile;
         int         _content_fd;
@@ -54,6 +55,7 @@ class Client
         void    set_server(Configuration p);
         void    set_socket(int socket);
         // ! NEW
+        void    initDefaultErrorPages( void );
         void    readCgiHeader( int fd );
         void    SendHeader(int fd);
         const std::stringstream&    getFileSize(int fd);

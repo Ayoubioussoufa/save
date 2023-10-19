@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Servers.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/18 17:11:16 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/19 00:29:27 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -262,6 +262,7 @@ int Servers::AllServers()
                 new_client.set_socket(clientSocketw);
                 new_client.set_server(it->second);
                 new_client._duplicated_servers = duplicated_servers;
+                new_client.initDefaultErrorPages();
                 _client.push_back(new_client);
                 if (clientSocketw > 0) { // !
                     std::cout << "add " << clientSocketw << " to the read_fds" << std::endl;
@@ -346,7 +347,6 @@ int Servers::AllServers()
         }
         for (std::vector<Client>::iterator its = _client.begin(); its != _client.end();)
         {
-            conditions = true;
             if (FD_ISSET(its->GetSocketId(), &tmp_write))
             {
                 its->_readStatus = -2;
@@ -357,31 +357,22 @@ int Servers::AllServers()
                     char buff[BUFFER_SIZE];
                     std::string header;
 
-                    int efd = open(its->getServer().getErrorPages()[404].c_str(), O_RDONLY);
-                    // std::cout << "******************" <<  its->getServer().getErrorPages()[404] << std::endl;
-                    if (efd < 0)
-                        throw(std::runtime_error("Invalid Error page !"));
-                    fstat(efd, &statbuffer);
+                    its->_content_fd = open(its->getServer().getErrorPages()[NOTFOUND].c_str(), O_RDONLY);
+                    if (its->_content_fd < 0)
+                        its->_content_fd = open(its->_defaultErrorPages[NOTFOUND].c_str(), O_RDONLY);
+                    std::cout << " ERROR PAGE : " << its->_defaultErrorPages[NOTFOUND] << std::endl;
+                    fstat(its->_content_fd, &statbuffer);
                     ss << statbuffer.st_size;
                     header = std::string("HTTP/1.1") + " 404 Not Found" + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-                    int bytes = write(its->GetSocketId(), header.c_str(), header.size());
-                    if (bytes < 0)
-                        throw(std::runtime_error(" write failed in sendErrorpage"));
-                    int rd = read(efd, buff, BUFFER_SIZE);
-                    buff[rd] = '\0';
-                    write(its->GetSocketId(), buff, rd);
-                    its->_readStatus = -1;
-                    // std::cout << " IS FAVICON : " << its->response.getHttpVersion() << std::endl;
-                    // its->SendErrorPage(404);
+                    write(its->GetSocketId(), header.c_str(), header.size());
+                    its->_status = 1;
+                    its->_isFavicon = false;
+                    std::cout << " IS FAVICON : " << its->response.getHttpVersion() << std::endl;
                 }
                 else if (its->_status == 0)
-                {
                     its->ft_Response();
-                }
                 else if (its->_status != CGI)
-                {
                     its->ft_send();
-                }
                 else
                 {
                     int r = waitpid(its->_cgiPid, 0, WNOHANG);
@@ -393,6 +384,7 @@ int Servers::AllServers()
                         its->_CgiHeader.clear();
                         if (its->response.GetFileExtention() == ".php")
                             its->readCgiHeader(its->_content_fd);
+                        std::cout << its->_CgiHeader << std::endl;
                         its->SendHeader(its->_content_fd);
                         its->_status = 1;
                     }
@@ -418,3 +410,9 @@ int Servers::AllServers()
     } 
     return 0;
 }
+// for (std::vector<Client>::iterator it = _client.begin(); it != _client.end(); it++)
+// {
+//     if (FD_ISSET(it->GetSocketId(), &tmp_write))
+//     {
+        
+//     }

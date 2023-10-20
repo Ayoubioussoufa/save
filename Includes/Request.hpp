@@ -43,9 +43,7 @@ class Request
         unsigned long         _total;
         bool                  _chunked;
     public:
-        std::string           _value;
         std::string           _name;
-        std::string           _upload;
         Request();
         Request(const Request& other);
         Request& operator=(const Request& other);

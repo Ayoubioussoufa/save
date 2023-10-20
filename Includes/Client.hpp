@@ -34,7 +34,6 @@ class Client
         Configuration   _client_server;
         std::map<std::string, std::string> _mapEnv;
     public :
-        std::vector<Configuration>  _duplicated_servers;
         // size_t      _content
         std::map<int, std::string> _defaultErrorPages;
         std::string _CgiHeader;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Servers.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/19 00:29:27 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/20 15:28:32 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,10 +90,10 @@ int Servers::ConfigFileParse(std::string file)
             block.push_back(line); // If any non-whitespace character is found
     }
     File.close();
-    printServerData();
-    if (_servers.size() > 1)
-        checkServers();
-    AllServers();
+    // printServerData();
+    // if (_servers.size() > 1)
+    //     checkServers();
+    // AllServers();
     return 0;
 }
 
@@ -121,36 +121,18 @@ void Servers::printServerData() const
 
 int Servers::AllServers()
 {
-    bool conditions = true;
     int maxFd = 2;   // will store the maximum file descriptor value for use in select()
     fd_set read_fds; // fd_set is a data structure used to manage file descriptors for I/O operations.
                      //  Fill up a fd_set structure with the file descriptors you want to know when data comes in on.
     int server_fd;
-    
     fd_set write_fds;
     Socket sockets;
     int yes = 1;
     std::vector<int> clientsocket;
     std::map<int, Configuration> serverSockets;
-    std::vector<Configuration>  duplicated_servers;
-    bool condition = false;
+    int i(10);
     for (std::vector<Configuration>::iterator it = _servers.begin(); it != _servers.end(); it++)
     {
-        for (std::map<int, Configuration>::iterator its = serverSockets.begin(); its != serverSockets.end(); its++)
-        {
-            if (its->second.getHost() == it->getHost() && its->second.getPort() == it->getPort())
-            {
-                condition = true;
-                it->_socketfd = its->second._socketfd;
-                duplicated_servers.push_back(*it);
-                break ;
-            }
-        }
-        if (condition)
-        {
-            condition = false;
-            continue ;
-        }
         struct addrinfo hints, *p, *res;
         memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_INET;
@@ -200,8 +182,8 @@ int Servers::AllServers()
         std::cout << "Listening on port " << it->getPort() << std::endl;
         if (server_fd > maxFd)
             maxFd = server_fd;
-        it->_socketfd = server_fd;
         serverSockets[server_fd] = *it;
+        i++;
     }
     FD_ZERO(&read_fds);
     FD_ZERO(&write_fds);
@@ -261,7 +243,6 @@ int Servers::AllServers()
                     maxFd = clientSocketw;
                 new_client.set_socket(clientSocketw);
                 new_client.set_server(it->second);
-                new_client._duplicated_servers = duplicated_servers;
                 new_client.initDefaultErrorPages();
                 _client.push_back(new_client);
                 if (clientSocketw > 0) { // !
@@ -308,32 +289,18 @@ int Servers::AllServers()
                 else
                 {
                     std::string buf(buffer, bytesRead);
-                    its->response._upload = its->getServer().getUpload();
                     std::cout << buf << std::endl;
                     if (strstr(buffer, FAVICON_PATH.c_str()) == NULL)
                     {
                         its->_isFavicon = false;
-                        if (!its->response.parseHttpRequest(buf))
+    
+                        if (!its->response.parseHttpRequest(buf)) // la 9ra kolchi
                         {
                             FD_CLR(its->GetSocketId(), &read_fds);
                             std::cout << "add " << its->GetSocketId() << " to write_fds " << std::endl;
-                            FD_SET(its->GetSocketId(), &write_fds);                         
+                            FD_SET(its->GetSocketId(), &write_fds);                            
                         }
-                        if (conditions)
-                        {
-                            for (std::vector<Configuration>::iterator it = duplicated_servers.begin(); it != duplicated_servers.end(); it++)
-                            {
-                                if (its->getServer().getPort() == it->getPort() && its->getServer().getHost() == it->getHost())
-                                {
-                                    if (its->response._value == it->getServerNames())
-                                    {
-                                        its->set_server(*it);
-                                        break;
-                                    }
-                                }
-                            }
-                            conditions = false;
-                        }
+
                     }
                     else
                     {

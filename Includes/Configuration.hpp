@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:22:39 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/11 17:57:12 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/20 15:28:01 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,6 @@ class Configuration
         std::vector<Location>                            _locations;
         
     public:
-        int                                              _socketfd;
         Configuration();
         // Configuration operator()(std::string host, std::string  port);
         Configuration(std::vector<std::string> vecteur);
@@ -72,6 +71,7 @@ class Configuration
         int	                        checkFile(std::string const path, int mode);
         int                         getTypePath(std::string const path);
         friend std::ostream& operator<<(std::ostream& o, Configuration obj);
+        bool    compareLocations(const Location& loc1, const Location& loc2);
         ~Configuration();
 };
 

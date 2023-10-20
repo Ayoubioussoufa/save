@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/18 00:55:47 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/19 17:33:47 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,8 +133,7 @@ std::string Request::GenerateFile() {
     std::string randomString = GenerateRandomString(6); // 6 characters for the filename
     std::string timestamp = GenerateTimestamp();
 
-    const char* dir_path = _upload.append("/").c_str();
-    std::cout<< " - - - - - - - - " << dir_path << " - - - - - - - - "<< std::endl;
+    const char* dir_path = "/Users/aybiouss/goinfre/";
 
     if (mkdir(dir_path, 0777) != 0 && errno != EEXIST) {
         std::cerr << "Failed to create directory: " << strerror(errno) << std::endl;
@@ -280,6 +279,7 @@ int    Request::parseHeaders()
                 std::string secondPart = _path.substr(found + 3);
                 std::string number = _path.substr(found + 1, 2);
                 long int value = strtol(number.c_str(), NULL, 16);
+                std::cout << "Line and parse : " << firstPart << "     |   SECOND PART    " << secondPart << "     | NUMBER :     " << number << "     |   VALUE :    " << value << std::endl;
                 if (value >= 0 && value <= 255) {
                     char character = static_cast<char>(value);
                     firstPart += character + secondPart;
@@ -301,6 +301,7 @@ int    Request::parseHeaders()
             _path = _path.substr(0, found);  // Get the substring before the '?'
         }
     }
+    std::cout << _path << " ||| " << _queryString << std::endl;
     while (std::getline(requestStream, line) && !line.empty())
     {
         size_t pos = line.find(":");
@@ -331,8 +332,6 @@ int    Request::parseHeaders()
                 _transferEncodingChunked = true;
             if (headerName == "Transfer-Encoding" && headerValue == "chunked\r")
                 _chunked = true;
-            if (headerName == "Host")
-                _value = headerValue.substr(0, headerValue.length() - 1);
         }
     }
     if (_transferEncodingChunked)
@@ -347,6 +346,8 @@ int    Request::parseHeaders()
     }
     if (_method == "GET" || _method == "DELETE")
     {
+        // std::cout << " IN REQUEST.CPP" << std::endl;
+        // ft_close(_fd);
         setResponseStatus(200);
         return 0;
     }
@@ -354,14 +355,19 @@ int    Request::parseHeaders()
     {
         std::string extension = ft_temp(); /// ! bdelha
         _name = GenerateFile() + extension;
+        std::cout << "IN REQUEST : " << _name.c_str() << std::endl;
         _fd = open(_name.c_str(), O_RDWR | O_APPEND | O_CREAT, 0666);
         std::cout << "File created with number : " << _fd << std::endl;
         if (_fd == -1) {
             std::cerr << "Failed to open the file." << std::endl;
             return 0;
         }
+        std::cout << "Value of _chunked : " <<  _chunked << std::endl;
         if (!_chunked)
+        {
+            std::cout << "mawslch hnaya " << std::endl;
             return processAllBody(); // BA9I ILA L BODY KBIIIIIIR 
+        }
         else
             return processBody();
     }

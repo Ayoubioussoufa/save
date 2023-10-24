@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/24 18:39:20 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/24 19:09:27 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,7 +254,7 @@ int    Request::parseHeaders()
         {
             if (str.find(_path[i]) == std::string::npos)
             {
-                setResponseStatus(416); // ! pdf ach kan fih ?
+                setResponseStatus(400); // ! pdf ach kan fih ?
                 return 0;
             }
         }

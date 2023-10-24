@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/23 18:14:52 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/24 18:39:20 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,14 +249,15 @@ int    Request::parseHeaders()
     }
     if (!_path.empty())
     {
-        // std::string str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
-        // for (int i = 0; i < _path.length(); i++)
-        // {
-        //     if (str.find() == std::string::npos)
-                
-        // } // ! special characters
-            std::cout << _path << " ||| " << _queryString << std::endl;
-
+        std::string str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
+        for (int i = 0; i < _path.length(); i++)
+        {
+            if (str.find(_path[i]) == std::string::npos)
+            {
+                setResponseStatus(416); // ! pdf ach kan fih ?
+                return 0;
+            }
+        }
         while (1)
         {
             size_t found = _path.find("%");

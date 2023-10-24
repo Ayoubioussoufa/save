@@ -220,7 +220,7 @@ int Servers::AllServers()
         fd_set tmp_read = read_fds;
         fd_set tmp_write = write_fds;
         int readySockets = select(maxFd + 1, &tmp_read, &tmp_write, NULL, NULL); // !
-        std::cout << "__________under Select__________" << std::endl;
+        // std::cout << "__________under Select__________" << std::endl;
         if (readySockets < 0)
         {
             for (int fd = 0; fd <= maxFd; fd++)
@@ -381,27 +381,27 @@ int Servers::AllServers()
                     {
                         if (WIFEXITED(its->_childExitStatus) && WEXITSTATUS(its->_childExitStatus))
                         {
-                            std::cout << "********************" << std::endl;
+                            std::cout << " ############################## "<< std::endl;
                             its->SendErrorPage(INTERNALSERVERERROR);
                         }
                         else if (WIFSIGNALED(its->_childExitStatus))
                         {
-                            std::cout << "====================" << std::endl;
+                            std::cout << " !!!!!!!!!!!!!!!!!!!!!!!! "<< std::endl;
                             its->SendErrorPage(INTERNALSERVERERROR);
                         }
                         else if (its->_waitStatus == its->_cgiPid)
                         {
-                            std::cout << "CGI FILE : " << its->_CgiFile << std::endl;
                             its->_content_fd = open (its->_CgiFile.c_str(), O_RDONLY);
                             if (its->_content_fd < 0)
                             {
-                                std::cout << "+++++++++++++++++++" << std::endl;
+                                std::cout << " ******************************************* "<< std::endl;
                                 its->SendErrorPage(INTERNALSERVERERROR);
                             }
-                            else{
+                            else
+                            {
                                 its->_CgiHeader.clear();
                                 its->readCgiHeader(its->_content_fd);
-                                std::cout << its->_CgiHeader << std::endl;
+                                std::cout << "CGI HEADER : " << its->_CgiHeader << std::endl;
                                 its->SendHeader(its->_content_fd);
                                 its->_status = 1;
                             }
@@ -409,11 +409,13 @@ int Servers::AllServers()
                     }
                     else if(std::time(NULL) - its->_cgiTimer >= TIMEOUT)
                     {
+                        // std::cout << "TIME OUT  ====> current Time : " << std::time(NULL) << " _cgiTimer : " << its->_cgiTimer  << " result : " << std::time(NULL) - its->_cgiTimer << " TIMEOUT : " << TIMEOUT << std::endl;
                         kill(its->_cgiPid , SIGTERM);
                         // waitpid(its->_cgiPid, 0, 0);
                         its->_cgiPid = -1;
                         its->SendErrorPage(REQUESTTIMEOUT);
                     }
+                    // std::cout << "NOT TIME OUT   ====> current Time : " << std::time(NULL) << " _cgiTimer : " << its->_cgiTimer  << " result : " << std::time(NULL) - its->_cgiTimer << " TIMEOUT : " << TIMEOUT << std::endl;
                 }
                 // std::cout << its->_readStatus << std::endl;
                 // std::cout << "_PID : " << its->_cgiPid << "r : " << r << std::endl;
